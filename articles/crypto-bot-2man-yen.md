@@ -3,7 +3,7 @@ title: "元手2万円で仮想通貨自動売買Botを作った全記録"
 emoji: "🤖"
 type: "tech"
 topics: ["crypto", "typescript", "ai", "自動売買", "bot"]
-published: false
+published: true
 ---
 
 ## はじめに
