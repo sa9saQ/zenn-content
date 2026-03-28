@@ -1,0 +1,92 @@
+name: Scheduled Article Publishing
+
+on:
+  schedule:
+    # 9:00 JST = 0:00 UTC
+    - cron: '0 0 1 4 *'   # Apr 1 - Article 1
+    - cron: '0 0 3 4 *'   # Apr 3 - Article 2
+    - cron: '0 0 8 4 *'   # Apr 8 - Article 3
+    - cron: '0 0 10 4 *'  # Apr 10 - Article 4
+    - cron: '0 0 15 4 *'  # Apr 15 - Article 5
+    - cron: '0 0 17 4 *'  # Apr 17 - Article 6
+  workflow_dispatch:
+    inputs:
+      article_number:
+        description: '公開する記事番号 (1-6)'
+        required: true
+        type: choice
+        options: ['1', '2', '3', '4', '5', '6']
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine article to publish
+        id: article
+        run: |
+          DAY=$(date -u +%-d)
+          MONTH=$(date -u +%-m)
+
+          # Manual trigger
+          if [ -n "${{ github.event.inputs.article_number }}" ]; then
+            NUM="${{ github.event.inputs.article_number }}"
+          # Schedule-based
+          elif [ "$MONTH" = "4" ]; then
+            case "$DAY" in
+              1)  NUM=1 ;;
+              3)  NUM=2 ;;
+              8)  NUM=3 ;;
+              10) NUM=4 ;;
+              15) NUM=5 ;;
+              17) NUM=6 ;;
+              *)  echo "No article scheduled for today"; exit 0 ;;
+            esac
+          else
+            echo "No article scheduled for this month"
+            exit 0
+          fi
+
+          # Article slug mapping
+          case "$NUM" in
+            1) SLUG="claude-code-harness-engineering-intro" ;;
+            2) SLUG="claude-code-claude-md-optimization" ;;
+            3) SLUG="claude-code-compaction-guide" ;;
+            4) SLUG="claude-code-progressive-disclosure" ;;
+            5) SLUG="anthropic-harness-evolution" ;;
+            6) SLUG="eth-zurich-agents-md-paradox" ;;
+          esac
+
+          echo "num=$NUM" >> $GITHUB_OUTPUT
+          echo "slug=$SLUG" >> $GITHUB_OUTPUT
+          echo "Publishing article #$NUM: $SLUG"
+
+      - name: Publish article
+        if: steps.article.outputs.slug != ''
+        run: |
+          FILE="articles/${{ steps.article.outputs.slug }}.md"
+          if [ ! -f "$FILE" ]; then
+            echo "File not found: $FILE"
+            exit 1
+          fi
+
+          # Change published: false to published: true
+          sed -i 's/^published: false$/published: true/' "$FILE"
+
+          # Verify the change
+          grep "published: true" "$FILE" || { echo "Failed to update published flag"; exit 1; }
+          echo "Updated $FILE to published: true"
+
+      - name: Commit and push
+        if: steps.article.outputs.slug != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "articles/${{ steps.article.outputs.slug }}.md"
+          git diff --cached --quiet && { echo "No changes to commit"; exit 0; }
+          git commit -m "Publish article #${{ steps.article.outputs.num }}: ${{ steps.article.outputs.slug }}"
+          git push
