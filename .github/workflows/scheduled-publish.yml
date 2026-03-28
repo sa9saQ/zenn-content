@@ -3,12 +3,12 @@ name: Scheduled Article Publishing
 on:
   schedule:
     # 9:00 JST = 0:00 UTC
-    - cron: '0 0 1 4 *'   # Apr 1 - Article 1
-    - cron: '0 0 3 4 *'   # Apr 3 - Article 2
-    - cron: '0 0 8 4 *'   # Apr 8 - Article 3
-    - cron: '0 0 10 4 *'  # Apr 10 - Article 4
-    - cron: '0 0 15 4 *'  # Apr 15 - Article 5
-    - cron: '0 0 17 4 *'  # Apr 17 - Article 6
+    - cron: '0 0 1 4 *'   # Apr 1 Wed - Article 1
+    - cron: '0 0 3 4 *'   # Apr 3 Fri - Article 2
+    - cron: '0 0 7 4 *'   # Apr 7 Tue - Article 3
+    - cron: '0 0 9 4 *'   # Apr 9 Thu - Article 4
+    - cron: '0 0 14 4 *'  # Apr 14 Tue - Article 5
+    - cron: '0 0 16 4 *'  # Apr 16 Thu - Article 6
   workflow_dispatch:
     inputs:
       article_number:
@@ -40,10 +40,10 @@ jobs:
             case "$DAY" in
               1)  NUM=1 ;;
               3)  NUM=2 ;;
-              8)  NUM=3 ;;
-              10) NUM=4 ;;
-              15) NUM=5 ;;
-              17) NUM=6 ;;
+              7)  NUM=3 ;;
+              9)  NUM=4 ;;
+              14) NUM=5 ;;
+              16) NUM=6 ;;
               *)  echo "No article scheduled for today"; exit 0 ;;
             esac
           else
