@@ -3,7 +3,7 @@ title: "Claude Codeの会話が長くなると指示を忘れる——Compaction
 emoji: "🧊"
 type: "tech"
 topics: ["claudecode", "ai", "開発環境", "初心者"]
-published: false
+published: true
 ---
 
 ## 「さっき言ったよね？」が通じなくなる瞬間
